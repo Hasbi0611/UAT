@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAT Document v2 - Interactive Sheet</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --font-title: 'Outfit', 'Inter', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            
+            /* Professional Spreadsheet Colors */
+            --bg-page: #f1f5f9;
+            --bg-sheet: #ffffff;
+            --grid-line: #cbd5e1;
+            --header-bg: #f8fafc;
+            --section-bg: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --primary-accent: #16a34a; /* Excel Green */
+            --primary-accent-light: rgba(22, 163, 74, 0.08);
+            
+            --success-color: #16a34a;
+            --success-bg: #dcfce7;
+            --warning-color: #d97706;
+            --warning-bg: #fef3c7;
+            
+            --border-cell: 1px solid var(--grid-line);
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* FLOATING ACTION BAR */
+        .action-bar {
+            width: 100%;
+            max-width: 1050px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+        }
+
+        .bar-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .bar-title .icon {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary-accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-family: var(--font-title);
+        }
+
+        .bar-title h2 {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .bar-title p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .bar-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: var(--transition);
+        }
+
+        .btn-green {
+            background-color: var(--primary-accent);
+            color: white;
+        }
+        .btn-green:hover {
+            background-color: #15803d;
+        }
+
+        .btn-outline {
+            background-color: white;
+            border-color: #cbd5e1;
+            color: var(--text-main);
+        }
+        .btn-outline:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--primary-accent);
+            background-color: var(--primary-accent-light);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        /* SPREADSHEET SHEET CONTAINER */
+        .sheet-container {
+            width: 100%;
+            max-width: 1050px;
+            background-color: var(--bg-sheet);
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.05);
+            border: 1px solid #cbd5e1;
+            position: relative;
+        }
+
+        /* SHEET GRID */
+        .sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+            table-layout: fixed;
+        }
+
+        /* COLUMN WIDTHS */
+        .sheet-table col.col-no { width: 50px; }
+        .sheet-table col.col-scen { width: 180px; }
+        .sheet-table col.col-step { width: 180px; }
+        .sheet-table col.col-exp { width: 180px; }
+        .sheet-table col.col-status { width: 110px; }
+        .sheet-table col.col-remark { width: auto; }
+
+        .sheet-table th, .sheet-table td {
+            border: var(--border-cell);
+            padding: 0.4rem 0.6rem;
+            vertical-align: middle;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        /* CELL TYPES & STYLING */
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
+        .font-bold { font-weight: bold !important; }
+        
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            border: none !important;
+            padding-bottom: 0.5rem !important;
+        }
+
+        .doc-ref {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            border: none !important;
+            padding-bottom: 1.5rem !important;
+        }
+
+        .section-header {
+            background-color: var(--section-bg);
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #1e293b;
+            letter-spacing: 0.02em;
+        }
+
+        .table-column-header {
+            background-color: var(--header-bg);
+            font-weight: bold;
+            color: #334155;
+            text-align: center !important;
+        }
+
+        /* INPUT CELLS */
+        .cell-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            color: var(--text-main);
+            padding: 0.25rem 0;
+            transition: var(--transition);
+        }
+        .cell-input:focus {
+            background-color: var(--primary-accent-light);
+        }
+
+        /* TEXTAREA REMARK CELLS */
+        .remark-textarea {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            color: var(--text-main);
+            resize: none;
+            min-height: 28px;
+            padding: 0.25rem 0;
+            line-height: 1.3;
+            overflow-y: hidden;
+            display: block;
+            transition: var(--transition);
+        }
+        .remark-textarea:focus {
+            background-color: var(--primary-accent-light);
+        }
+
+        .info-label {
+            background-color: var(--header-bg);
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* DROPDOWN SELECT STYLING */
+        .cell-select {
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            background-color: white;
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+        }
+
+        .cell-select.opt-empty {
+            background-color: #f1f5f9;
+            color: #64748b;
+            border-color: #cbd5e1;
+        }
+        .cell-select.opt-done {
+            background-color: var(--success-bg);
+            color: var(--success-color);
+            border-color: #bbf7d0;
+        }
+        .cell-select.opt-pending {
+            background-color: var(--warning-bg);
+            color: var(--warning-color);
+            border-color: #fde68a;
+        }
+
+        /* SCENARIO ROWS */
+        .sc-row {
+            transition: var(--transition);
+        }
+        .sc-row:hover {
+            background-color: rgba(241, 245, 249, 0.5);
+        }
+
+        /* SUMMARY BLOCK */
+        .summary-title {
+            background-color: var(--section-bg);
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .summary-header {
+            background-color: var(--header-bg);
+            font-weight: bold;
+            color: #334155;
+            text-align: center !important;
+        }
+
+        .summary-val {
+            text-align: center !important;
+            font-weight: bold !important;
+            font-size: 0.9rem;
+        }
+
+        /* SIGN-OFF BLOCK */
+        .sign-off-table, .sign-off-table th, .sign-off-table td {
+            border: none !important;
+        }
+        
+        .sign-off-title-row {
+            background-color: var(--header-bg);
+            font-weight: bold;
+        }
+        
+        .sign-off-title-row td {
+            text-align: center !important;
+        }
+        
+        .sign-off-space {
+            height: 80px;
+        }
+
+        /* SHEET LOGO */
+        .sheet-logo {
+            position: absolute;
+            left: 0;
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* CLICKABLE SCENARIO CODE */
+        .sc-code-link {
+            cursor: pointer;
+            color: var(--primary-accent);
+            font-weight: 800;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .sc-code-link:hover {
+            background-color: var(--primary-accent);
+            color: white;
+            transform: scale(1.05);
+        }
+
+
+        /* DOCUMENTATION POPUP MODAL */
+        .doc-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .doc-modal-overlay.active {
+            display: flex;
+        }
+
+        .doc-modal {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .doc-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #f0fdf4, #f8fafc);
+        }
+
+        .doc-modal-header h3 {
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .doc-modal-header h3 .code-badge {
+            background: var(--primary-accent);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .doc-modal-close {
+            width: 36px; height: 36px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 1.2rem;
+            color: #64748b;
+        }
+        .doc-modal-close:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .doc-modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .doc-modal-body .doc-section-title {
+            font-family: var(--font-title);
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-accent);
+        }
+
+        .doc-modal-body .doc-text {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: #334155;
+            margin-bottom: 1rem;
+        }
+
+        .doc-modal-body .doc-note {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 0.75rem 1rem;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+
+        .doc-modal-body .doc-image-wrapper {
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .doc-modal-body .doc-image-wrapper img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .doc-modal-body .doc-image-caption {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+
+        /* TEMPLATE EDITOR MODAL */
+        .editor-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+        .editor-modal-overlay.active {
+            display: flex;
+        }
+
+        .editor-modal {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1100px;
+            width: 100%;
+            height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        .editor-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        }
+
+        .editor-modal-header h3 {
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .editor-modal-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .editor-sidebar {
+            width: 320px;
+            border-right: 1px solid #e2e8f0;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: #ffffff;
+        }
+
+        /* Category / Section styling in sidebar */
+        .editor-sec-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+        .editor-sec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: #f1f5f9;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #334155;
+            cursor: pointer;
+        }
+        .editor-sec-header:hover {
+            background: #e2e8f0;
+        }
+        .editor-sec-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+        .editor-sec-scenarios {
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .editor-sc-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #475569;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .editor-sc-item:hover, .editor-sc-item.active {
+            background: var(--primary-accent-light);
+            color: var(--primary-accent);
+            font-weight: 600;
+        }
+
+        .editor-btn-small {
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .editor-btn-small:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .editor-form-group {
+            margin-bottom: 1rem;
+        }
+        .editor-form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.35rem;
+        }
+        .editor-input {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .editor-input:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 2px var(--primary-accent-light);
+        }
+        .editor-textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            resize: vertical;
+            min-height: 80px;
+            outline: none;
+        }
+        .editor-textarea:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 2px var(--primary-accent-light);
+        }
+
+        /* PRINT STYLE STYLING (@media print) */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 5mm 8mm 10mm 8mm;
+            }
+            @page {
+                @bottom-right {
+                    content: "Page " counter(page);
+                    font-size: 7pt;
+                    font-family: 'Inter', sans-serif;
+                    color: #666;
+                }
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body {
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                color: black !important;
+                display: block !important;
+                min-height: auto !important;
+                font-size: 8pt !important;
+            }
+
+            .action-bar, .doc-modal-overlay, .editor-modal-overlay {
+                display: none !important;
+            }
+
+            .sheet-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* All tables: readable size, full width, allow page break inside */
+            .sheet-table {
+                page-break-inside: auto !important;
+                font-size: 8pt !important;
+                width: 100% !important;
+                margin-bottom: 4pt !important;
+            }
+
+            .sheet-table tr {
+                page-break-inside: avoid !important;
+            }
+
+            .sheet-table th, .sheet-table td {
+                border: 0.5pt solid #000000 !important;
+                color: black !important;
+                padding: 3px 5px !important;
+                font-size: 8pt !important;
+                line-height: 1.3 !important;
+            }
+
+            /* ===== TITLE TABLE: NO BORDERS AT ALL ===== */
+            .sheet-table:first-of-type th,
+            .sheet-table:first-of-type td {
+                border: none !important;
+            }
+
+            /* Logo: bigger for print berita acara */
+            .sheet-logo {
+                position: absolute !important;
+                left: 0 !important;
+                height: 48px !important;
+                width: auto !important;
+            }
+
+            /* Title compact but readable */
+            .main-title {
+                font-size: 14pt !important;
+                padding: 4px 0 !important;
+                padding-bottom: 2px !important;
+                border: none !important;
+            }
+
+            .doc-ref {
+                font-size: 8pt !important;
+                padding-bottom: 4px !important;
+                border: none !important;
+            }
+
+            /* Section headers */
+            .section-header {
+                font-size: 8pt !important;
+                font-weight: bold !important;
+                padding: 3px 5px !important;
+                background-color: #d9d9d9 !important;
+            }
+
+            .table-column-header, .summary-header, .info-label {
+                background-color: #ececec !important;
+                font-size: 8pt !important;
+                padding: 3px 5px !important;
+            }
+
+            /* Inputs readable */
+            .cell-input {
+                color: black !important;
+                font-size: 8pt !important;
+                padding: 1px 0 !important;
+                height: auto !important;
+            }
+
+            .cell-select {
+                border: none !important;
+                appearance: none !important;
+                -webkit-appearance: none !important;
+                background: transparent !important;
+                color: black !important;
+                font-weight: bold !important;
+                text-align: center !important;
+                padding: 0 !important;
+                font-size: 8pt !important;
+            }
+
+            .remark-textarea {
+                resize: none !important;
+                height: auto !important;
+                overflow: visible !important;
+                color: black !important;
+                font-size: 7pt !important;
+                min-height: 10px !important;
+                padding: 0 !important;
+                line-height: 1.2 !important;
+            }
+
+            /* Summary section - add spacing above */
+            .summary-title {
+                font-size: 8pt !important;
+                background-color: #d9d9d9 !important;
+            }
+
+            .summary-val {
+                font-size: 8pt !important;
+            }
+
+            /* Sign-off: NO borders, bigger signature area, spacing above, keep together */
+            .sign-off-table {
+                margin-top: 20pt !important;
+                page-break-inside: avoid !important;
+            }
+            .sign-off-table, .sign-off-table th, .sign-off-table td {
+                border: none !important;
+            }
+            .sign-off-title-row {
+                background-color: transparent !important;
+            }
+            .sign-off-title-row td {
+                background-color: transparent !important;
+                text-align: center !important;
+                font-size: 9pt !important;
+                font-weight: bold !important;
+                padding-bottom: 4px !important;
+            }
+            .sign-off-space {
+                height: 70px !important;
+            }
+
+            /* Column widths for print - proportional to fill full A4 width */
+            .sheet-table col.col-no { width: 5% !important; }
+            .sheet-table col.col-scen { width: 20% !important; }
+            .sheet-table col.col-step { width: 20% !important; }
+            .sheet-table col.col-exp { width: 20% !important; }
+            .sheet-table col.col-status { width: 10% !important; }
+            .sheet-table col.col-remark { width: 25% !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- FLOATING ACTIONS BAR -->
+    <div class="action-bar">
+        <div class="bar-title">
+            <img src="logo.png" alt="Logo" style="height: 36px; width: auto; object-fit: contain;">
+            <div style="border-left: 1px solid var(--grid-line); padding-left: 0.75rem; margin-left: 0.25rem; display: flex; align-items: center; height: 36px;">
+                <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin: 0;">Format Excel Interaktif - Siap Isi & Cetak Otomatis</p>
+            </div>
+        </div>
+        
+        <div class="bar-buttons">
+            <div class="status-indicator">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+                Auto-saved
+            </div>
+            <button class="btn btn-outline" onclick="openTemplateEditor()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128c.332-.183.582-.495.645-.869l.214-1.28z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Kelola Template
+            </button>
+            <button class="btn btn-outline" onclick="loadSampleData()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Isi Contoh Data
+            </button>
+            <button class="btn btn-outline" onclick="resetSheet()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Reset Sheet
+            </button>
+            <button class="btn btn-green" onclick="printSheet()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Cetak / Print PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- SHEET WORKSPACE -->
+    <div class="sheet-container">
+        
+        <!-- TITLE SECTION -->
+        <table class="sheet-table" style="margin-bottom: 0;">
+            <colgroup>
+                <col style="width: 100%;">
+            </colgroup>
+            <tr>
+                <td class="main-title text-center" id="cell-C2">
+                    <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 100%;">
+                        <img src="logo.png" alt="Logo" class="sheet-logo">
+                        <span style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-title);">User Acceptance Test (UAT)</span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="doc-ref text-right" id="cell-E5">
+                    Document : <input type="text" id="inp-doc" class="cell-input text-right font-bold" style="display:inline-block; width:200px;" placeholder="No. Dokumen">
+                </td>
+            </tr>
+        </table>
+
+        <!-- INFO SECTION -->
+        <table class="sheet-table" style="margin-bottom: 1.5rem;">
+            <colgroup>
+                <col class="col-no">
+                <col class="col-scen">
+                <col class="col-step">
+                <col class="col-exp">
+                <col class="col-status">
+                <col class="col-remark">
+            </colgroup>
+            <tr>
+                <td colspan="6" class="section-header">INFO</td>
+            </tr>
+            <tr class="table-column-header font-bold text-center">
+                <td colspan="2" style="text-align: center !important;">Item</td>
+                <td colspan="4" style="text-align: center !important;">Description</td>
+            </tr>
+            <tr>
+                <td class="info-label" colspan="2">Project</td>
+                <td colspan="4"><input type="text" id="info-project" class="cell-input" placeholder="Nama hotel / proyek"></td>
+            </tr>
+            <tr>
+                <td class="info-label" colspan="2">PMS</td>
+                <td colspan="4"><input type="text" id="info-pms" class="cell-input" placeholder="Nama sistem PMS"></td>
+            </tr>
+            <tr>
+                <td class="info-label" colspan="2">Application</td>
+                <td colspan="4"><input type="text" id="info-app" class="cell-input" placeholder="Nama aplikasi interface"></td>
+            </tr>
+            <tr>
+                <td class="info-label" colspan="2">Brand</td>
+                <td colspan="4"><input type="text" id="info-brand" class="cell-input" placeholder="Vendor / brand interface"></td>
+            </tr>
+            <tr>
+                <td class="info-label" colspan="2">Version Application</td>
+                <td colspan="4"><input type="text" id="info-version" class="cell-input" placeholder="Versi aplikasi"></td>
+            </tr>
+            <tr>
+                <td class="info-label" colspan="2">Testing Date</td>
+                <td colspan="4"><input type="date" id="info-date" class="cell-input" placeholder="Tanggal testing"></td>
+            </tr>
+            <tr>
+                <td class="info-label" colspan="2">PIC Power Pro (Position)</td>
+                <td colspan="4"><input type="text" id="info-picpp" class="cell-input" placeholder="PIC PowerPro (Jabatan)"></td>
+            </tr>
+            <tr>
+                <td class="info-label" colspan="2">PIC Hotel (Position)</td>
+                <td colspan="4"><input type="text" id="info-pichot" class="cell-input" placeholder="PIC Hotel (Jabatan)"></td>
+            </tr>
+        </table>
+
+        <!-- MAIN SCENARIO TABLE -->
+        <table class="sheet-table" style="margin-bottom: 1.5rem;">
+            <colgroup>
+                <col class="col-no">
+                <col class="col-scen">
+                <col class="col-step">
+                <col class="col-exp">
+                <col class="col-status">
+                <col class="col-remark">
+            </colgroup>
+            
+            <thead>
+                <tr class="table-column-header">
+                    <th>No.</th>
+                    <th>Scenario</th>
+                    <th>Test Step</th>
+                    <th>Expected Result</th>
+                    <th>Status</th>
+                    <th>Remark</th>
+                </tr>
+            </thead>
+
+            <tbody id="sheet-scenarios-body">
+                <!-- Skenarios will be rendered category-by-category by JS -->
+            </tbody>
+        </table>
+
+        <!-- SUMMARY SECTION -->
+        <table class="sheet-table" style="margin-bottom: 2rem; max-width: 600px;">
+            <colgroup>
+                <col style="width: 250px;">
+                <col style="width: 100px;">
+                <col style="width: 100px;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <td colspan="3" class="summary-title">SUMMARY</td>
+                </tr>
+                <tr class="summary-header">
+                    <td>Category</td>
+                    <td class="text-center">DONE</td>
+                    <td class="text-center">PENDING</td>
+                </tr>
+            </thead>
+            <tbody id="summary-table-body">
+                <!-- Summary rows will be updated by JS -->
+            </tbody>
+        </table>
+
+        <!-- SIGN-OFF SECTION -->
+        <table class="sheet-table sign-off-table" style="page-break-inside: avoid;">
+            <colgroup>
+                <col style="width: 33%;">
+                <col style="width: 33%;">
+                <col style="width: 34%;">
+            </colgroup>
+            <thead>
+                <tr class="sign-off-title-row">
+                    <td class="text-center">Prepared By</td>
+                    <td class="text-center">Reviewed By</td>
+                    <td class="text-center">Approved By</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="sign-off-space">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="text-center font-bold">
+                    <td>
+                        <input type="text" id="sign-prep-name" class="cell-input text-center font-bold" placeholder="Nama PIC">
+                    </td>
+                    <td>
+                        <input type="text" id="sign-rev-name" class="cell-input text-center font-bold" placeholder="Nama PIC">
+                    </td>
+                    <td>
+                        <input type="text" id="sign-app-name" class="cell-input text-center font-bold" placeholder="Nama PIC">
+                    </td>
+                </tr>
+                <tr class="text-center" style="font-size: 0.75rem; color: var(--text-muted);">
+                    <td>
+                        <input type="text" id="sign-prep-pos" class="cell-input text-center" style="font-size: 0.75rem;" placeholder="Tehnical Support">
+                    </td>
+                    <td>
+                        <input type="text" id="sign-rev-pos" class="cell-input text-center" style="font-size: 0.75rem;" placeholder="IT / EDP">
+                    </td>
+                    <td>
+                        <input type="text" id="sign-app-pos" class="cell-input text-center" style="font-size: 0.75rem;" placeholder="Ecommerce / Reservation">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    <!-- DOCUMENTATION POPUP MODAL -->
+    <div id="doc-modal" class="doc-modal-overlay" onclick="closeDocModal(event)">
+        <div class="doc-modal" onclick="event.stopPropagation()">
+            <div class="doc-modal-header">
+                <h3><span id="modal-code" class="code-badge">A01</span> <span id="modal-title">API connectivity PMS ke CM</span></h3>
+                <button class="doc-modal-close" onclick="closeDocModal(event)">&times;</button>
+            </div>
+            <div class="doc-modal-body" id="modal-body">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TEMPLATE EDITOR MODAL -->
+    <div id="editor-modal" class="editor-modal-overlay" onclick="closeEditorModal(event)">
+        <div class="editor-modal" onclick="event.stopPropagation()">
+            <div class="editor-modal-header">
+                <h3>Kelola Template UAT (Kategori, Skenario & Dokumentasi)</h3>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="btn btn-outline" style="padding: 0.35rem 0.75rem;" onclick="exportTemplate()">
+                        Export JSON
+                    </button>
+                    <button class="btn btn-outline" style="padding: 0.35rem 0.75rem;" onclick="document.getElementById('import-file').click()">
+                        Import JSON
+                    </button>
+                    <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importTemplate(event)">
+                    <button class="btn btn-outline" style="padding: 0.35rem 0.75rem; color: #ef4444;" onclick="resetTemplateToDefault()">
+                        Reset Default
+                    </button>
+                    <button class="doc-modal-close" style="width: 32px; height: 32px;" onclick="closeEditorModal(event)">&times;</button>
+                </div>
+            </div>
+            <div class="editor-modal-container">
+                <!-- Left Sidebar: Category & Scenario Tree -->
+                <div class="editor-sidebar">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">Daftar Kategori</span>
+                        <button class="editor-btn-small" onclick="addNewSection()">+ Kategori</button>
+                    </div>
+                    <div id="editor-sections-list">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+                <!-- Right Content Area: Form Editor -->
+                <div class="editor-content" id="editor-form-pane">
+                    <div style="text-align: center; color: var(--text-muted); margin-top: 4rem;">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem; color: #cbd5e1;"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"></path></svg>
+                        <p style="font-weight: 500;">Pilih kategori atau skenario di sebelah kiri untuk mulai mengedit</p>
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.75rem; background: #f8fafc;">
+                <button class="btn btn-outline" onclick="closeEditorModal()">Batal</button>
+                <button class="btn btn-green" onclick="saveTemplateChanges()">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT SHEET LOGIC -->
+    <script>
+        // Custom print function - removes browser header/footer text
+        function printSheet() {
+            var originalTitle = document.title;
+            document.title = ' ';
+            window.print();
+            // Restore title after print dialog closes
+            setTimeout(function() {
+                document.title = originalTitle;
+            }, 500);
+        }
+
+        const DEFAULT_DOCS = {
+            "A01": {
+                title: "API connectivity PMS ke CM",
+                desc: "API (Application Programming Interface) yang diberikan dari Channel Manager untuk interface ke PowerPro.",
+                note: "Perlu diperhatikan bahwa setiap Channel Manager menggunakan API atau URL yang berbeda-beda. Untuk memastikan bahwa API atau URL yang digunakan sudah sesuai, lakukan pengujian dengan cara membuka aplikasi interface (PowerSTA.exe), kemudian pilih menu Setup dan klik SSL Test. Jika muncul keterangan 'OK', maka URL telah terhubung dengan baik.\n\nJika sistem tidak dapat terkoneksi, kemungkinan disebabkan oleh jaringan hotel yang terblokir atau versi Windows yang belum mendukung TLS. Umumnya, kendala ini terjadi pada penggunaan Windows Server 2012 atau versi di bawahnya.",
+                images: [{ src: "docs_images/1.png", caption: "Gambar A01.1 SSL Test OK" }]
+            },
+            "A02": {
+                title: "API Credential Validation",
+                desc: "Proses validasi API credential dari Channel Manager (CM) untuk memastikan kesesuaian data.",
+                note: "Untuk melihat data koneksi, buka aplikasi PowerOTA, kemudian klik kanan pada bagian Description, pilih menu Setup, lalu pilih Connection.",
+                images: [{ src: "docs_images/2.png", caption: "Gambar A02.1 Connection Setup" }]
+            },
+            "A03": {
+                title: "Application interface running",
+                desc: "Pastikan aplikasi interface dalam kondisi berjalan (running). Sebelum dijalankan, aplikasi harus sudah terdaftar (registered) pada cloud setup menggunakan akun atau lisensi hotel.",
+                images: [{ src: "docs_images/3.png", caption: "Gambar A03.1 Aplikasi Running" }]
+            },
+            "A04": {
+                title: "XML/API Download request test",
+                desc: "Download Request Test digunakan untuk memastikan bahwa response hasil proses download sudah sesuai dengan yang diharapkan.",
+                note: "Untuk menampilkan response, pada aplikasi interface (PowerSTA) klik bagian kanan pada menu log, kemudian akan muncul tombol Response. Jika muncul tampilan (No New Booking) setelah klik Download, maka proses request test telah berhasil.",
+                images: [{ src: "docs_images/4.png", caption: "Gambar A04.1 Download Response" }]
+            },
+            "A05": {
+                title: "XML/API Upload request test",
+                desc: "Upload Request Test digunakan untuk memastikan bahwa response hasil proses Upload Room sudah sesuai dengan yang diharapkan.",
+                note: "Untuk menampilkan response, pada aplikasi interface (PowerSTA) klik bagian kanan pada menu log, kemudian akan muncul tombol Response. Jika muncul tampilan (Success) setelah klik Upload, maka proses Upload test telah berhasil.",
+                images: [{ src: "docs_images/5.png", caption: "Gambar A05.1 Upload Response" }]
+            },
+            "A06": {
+                title: "Database integration",
+                desc: "Database integration ini bertujuan untuk memastikan bahwa direktori database telah mengarah ke database live hotel yang sesuai.",
+                note: "Tampilan ini berfungsi untuk melakukan patch database, termasuk proses pemasangan stored procedure (SP) yang berasal dari interface Channel Manager. Caranya adalah dengan double klik pada tulisan database Name.",
+                images: [{ src: "docs_images/6.png", caption: "Gambar A06.1 Database Setup" }]
+            },
+            "B01": {
+                title: "Room type mapping",
+                desc: "Room Type Mapping merupakan proses pencocokan tipe kamar antara sistem PMS (PowerPro) dengan Channel Manager. Proses ini bertujuan agar setiap tipe kamar yang ada di PMS dapat terhubung dengan tipe kamar yang sesuai pada Channel Manager, sehingga data ketersediaan kamar (availability) dan reservasi dapat tersinkronisasi dengan benar.",
+                note: "Buka aplikasi interface (PowerOTA), klik kanan Setup di bagian Description. Setelah itu, tampilan mapping kamar akan muncul.",
+                images: [{ src: "docs_images/7.jpeg", caption: "Gambar B01.1 Room Type Mapping" }]
+            },
+            "B02": {
+                title: "Rate plan mapping",
+                desc: "Rate Plan Mapping merupakan proses pencocokan jenis harga atau paket kamar antara sistem PMS (PowerPro) dengan Channel Manager. Proses ini bertujuan agar setiap rate plan yang tersedia di PMS dapat terhubung dengan rate plan yang sesuai pada Channel Manager, sehingga pengiriman data harga (rate) dapat berjalan dengan akurat.",
+                images: [{ src: "docs_images/8.jpeg", caption: "Gambar B02.1 Rate Plan Mapping" }]
+            },
+            "B03": {
+                title: "Customer Code mapping",
+                desc: "Customer Code Mapping merupakan proses pencocokan kode customer antara sistem PMS (PowerPro) dengan Channel Manager. Proses ini bertujuan agar setiap reservasi yang masuk dari Channel Manager dapat tercatat pada PMS dengan kode customer yang sesuai, sehingga memudahkan proses identifikasi dan pelaporan.",
+                images: [{ src: "docs_images/9.jpeg", caption: "Gambar B03.1 Customer Code Mapping" }]
+            },
+            "B04": {
+                title: "Available Upload RI & Rate Setup",
+                desc: "Available Upload RI & Rate Setup merupakan proses pengiriman data Room Inventory (RI) dan rate (harga kamar) dari sistem PMS (PowerPro) ke Channel Manager. Proses ini bertujuan untuk memastikan ketersediaan kamar dan harga yang ditampilkan pada seluruh channel telah sesuai dengan data pada PMS.",
+                note: "Pada bagian Activate, tersedia opsi centang Activate Available Room Upload dan Activate Room Rate Upload yang berfungsi untuk mengatur jenis data yang akan dikirim. Tersedia juga opsi if Available, Percent, Min, dan Max untuk mengatur jumlah ketersediaan yang di-upload ke CM.",
+                images: [{ src: "docs_images/10.png", caption: "Gambar B03.1 Available Upload" }]
+            },
+            "C01": {
+                title: "Update inventory",
+                desc: "Update Inventory merupakan proses pembaruan data ketersediaan kamar (inventory) dari sistem PMS (PowerPro) ke Channel Manager. Proses ini dilakukan untuk memastikan jumlah kamar yang tersedia selalu sesuai dengan kondisi aktual di PMS.",
+                note: "Buka Aplikasi PowerFO - klik Room Inventory untuk melihat tampilan ketersediaan kamar.",
+                images: [{ src: "docs_images/11.png", caption: "Gambar C01.1 Room Inventory" }]
+            },
+            "C02": {
+                title: "Update rate",
+                desc: "Update Rate merupakan proses pembaruan data harga kamar (room rate) dari sistem PMS (PowerPro) ke Channel Manager. Proses ini bertujuan untuk memastikan harga kamar yang ditampilkan pada seluruh channel distribusi selalu sesuai dengan data terbaru pada PMS.",
+                note: "Buka Aplikasi PowerFO - klik Tools - pilih Room Rate & Package - cari Rate Interface - Klik Surchage - Klik Browser. Rate tersebut akan upload ke Channel Manager jika dilakukan cek list pada PowerOTA di bagian Activate Room Rate Upload.",
+                images: [{ src: "docs_images/12.png", caption: "Gambar C02.1 Rate Setup" }]
+            },
+            "C03": {
+                title: "Stop sell",
+                desc: "Stop Sell merupakan fitur yang digunakan untuk menghentikan sementara penjualan kamar pada periode tertentu di Channel Manager. Dengan mengaktifkan Stop Sell, kamar tidak akan tersedia untuk dijual pada seluruh channel meskipun masih terdapat ketersediaan di PMS.",
+                note: "Buka aplikasi PowerFO, kemudian klik menu Tools dan pilih Room Rate & Package. Selanjutnya, cari Rate Interface, lalu klik Available Schedule. Pengguna dapat menentukan Beginning Date, Ending Date, dan kolom Priority wajib diisi.",
+                images: [{ src: "docs_images/13.png", caption: "Gambar C03.1 Stop Sell Schedule" }]
+            },
+            "D01": {
+                title: "Booking dari OTA/Website Hotel",
+                desc: "Booking dari OTA (Online Travel Agent) atau website hotel merupakan proses penerimaan reservasi yang dilakukan oleh tamu melalui channel distribusi, kemudian secara otomatis dikirim melalui Channel Manager dan masuk ke sistem PMS (PowerPro).",
+                note: "Setelah proses interface selesai, disarankan untuk melakukan pengujian booking guna memastikan integrasi berjalan lancar.",
+                images: [{ src: "docs_images/14.png", caption: "Gambar D01.1 Data Reservasi" }]
+            },
+            "D02": {
+                title: "Guest detail info",
+                desc: "Guest Detail Info merupakan informasi lengkap mengenai data tamu yang diperoleh dari reservasi yang masuk melalui Channel Manager ke sistem PMS (PowerPro).",
+                note: "Pastikan data tamu yang masuk ke PMS telah sesuai dengan data pada voucher yang dikirimkan oleh OTA ke email hotel.",
+                images: [
+                    { src: "docs_images/15.png", caption: "Gambar D02.1 Detail Tamu di PMS" },
+                    { src: "docs_images/16.png", caption: "Gambar D02.2 Contoh Voucher OTA" }
+                ]
+            },
+            "E01": {
+                title: "Change stay date",
+                desc: "Change Stay Date merupakan proses perubahan tanggal menginap (check-in dan/atau check-out) pada reservasi yang telah dibuat melalui OTA / Channel Manager, kemudian diperbarui secara otomatis ke sistem PMS (PowerPro).",
+                note: "Status reservasi akan berubah menjadi Modify untuk menunjukkan perubahan tanggal menginap.",
+                images: [{ src: "docs_images/17.jpeg", caption: "Gambar E01.1 Modification Status" }]
+            },
+            "E02": {
+                title: "Change Room Type",
+                desc: "Change Room Type merupakan proses perubahan tipe kamar pada reservasi yang telah dibuat melalui OTA / Channel Manager, yang kemudian diperbarui secara otomatis ke sistem PMS (PowerPro).",
+                note: "Tampilan status perubahan sama dengan proses Change Stay Date (Modify).",
+                images: [{ src: "docs_images/17.jpeg", caption: "Gambar E01.1 Modification Status" }]
+            },
+            "F01": {
+                title: "Cancel booking OTA",
+                desc: "Cancel Booking OTA merupakan proses pembatalan reservasi yang dilakukan oleh tamu melalui Online Travel Agent (OTA), yang kemudian secara otomatis tersinkronisasi ke sistem PMS (PowerPro) melalui Channel Manager.",
+                note: "Status reservasi di PowerOTA akan ter-update menjadi Cancel.",
+                images: [{ src: "docs_images/18.jpeg", caption: "Gambar F01.1 Cancellation Status" }]
+            },
+            "F02": {
+                title: "Inventory reopen",
+                desc: "Inventory Reopen merupakan proses pembukaan kembali ketersediaan kamar (availability) yang sebelumnya ditutup atau terpakai, sehingga kamar dapat kembali dijual setelah proses pembatalan reservasi berhasil masuk ke sistem PMS.",
+                note: "Proses ini memastikan kamar yang dibatalkan langsung ter-update ketersediaannya di Channel Manager secara otomatis."
+            },
+            "G01": {
+                title: "Multiple Reservation",
+                desc: "Multiple Reservation merupakan kondisi di mana terdapat lebih dari satu reservasi dengan status berbeda (Book, Cancel, & Modify) yang diproses secara bersamaan atau berurutan, lalu masuk ke sistem PMS (PowerPro).",
+                images: [{ src: "docs_images/19.png", caption: "Gambar G01 List Multiple Reservation" }]
+            },
+            "H01": {
+                title: "Reservation Not Save",
+                desc: "Reservation Not Save merupakan kondisi di mana data reservasi yang dikirim dari OTA / Channel Manager tidak berhasil tersimpan ke dalam sistem PowerFO, sehingga data menggantung di PowerOTA.",
+                note: "Lakukan manual release atau pengecekan konfigurasi kode untuk mengetahui sumber hambatan.",
+                images: [{ src: "docs_images/20.png", caption: "Gambar H01.1 Status Not Save" }]
+            },
+            "H02": {
+                title: "Availble Not Sync",
+                desc: "Available Not Sync merupakan kondisi di mana data ketersediaan kamar (availability) antara PMS (PowerPro) dan OTA / Channel Manager tidak sesuai atau tidak tersinkronisasi dengan baik.",
+                note: "Periksa Log XML Available untuk melihat komunikasi data yang terjadi.",
+                images: [{ src: "docs_images/21.png", caption: "Gambar H02.1 Log XML Available" }]
+            },
+            "H03": {
+                title: "Rate Not Sync",
+                desc: "Rate Not Sync merupakan kondisi di mana data harga kamar (room rate) antara PMS (PowerPro) dan OTA / Channel Manager tidak tersinkronisasi dengan benar.",
+                note: "Periksa Log XML Rate Sync untuk mengidentifikasi kegagalan pengiriman harga kamar.",
+                images: [{ src: "docs_images/22.png", caption: "Gambar H03.1 Log XML Rate Sync" }]
+            }
+        };
+
+        // Scenario Data direct replication from Excel rows
+        const DEFAULT_SECTIONS = [
+            {
+                code: "INSTALLATION",
+                title: "INSTALLATION",
+                cat: "Installation",
+                items: [
+                    { no: "A01", scenario: "API connectivity PMS ke CM", step: "API connection test", expected: "Connected" },
+                    { no: "A02", scenario: "API credential validation", step: "Input credential", expected: "Authentication success" },
+                    { no: "A03", scenario: "Application interface running", step: "Run the application", expected: "Application aktif" },
+                    { no: "A04", scenario: "XML/API Download request test", step: "Send test request", expected: "Response success" },
+                    { no: "A05", scenario: "XML/API Upload request test", step: "Send test request", expected: "Response success" },
+                    { no: "A06", scenario: "Database integration", step: "Start application", expected: "The DB address is correct" }
+                ]
+            },
+            {
+                code: "MAPPING",
+                title: "MAPPING",
+                cat: "Mapping",
+                items: [
+                    { no: "B01", scenario: "Room type mapping", step: "Mapping PMS room to CM", expected: "Mapping valid" },
+                    { no: "B02", scenario: "Rate plan mapping", step: "Mapping rate plan", expected: "Mapping valid" },
+                    { no: "B03", scenario: "Customer Code mapping", step: "Customer code mapping", expected: "Mapping valid" },
+                    { no: "B04", scenario: "Available Upload RI & Rate Setup", step: "Mapping Upload", expected: "Mapping valid" }
+                ]
+            },
+            {
+                code: "ARI",
+                title: "ARI (Available Room Inventory) SYNC",
+                cat: "ARI Sync",
+                items: [
+                    { no: "C01", scenario: "Update inventory", step: "Update room in PMS", expected: "OTA also updates" },
+                    { no: "C02", scenario: "Update rate", step: "Change the room price", expected: "OTA update rate" },
+                    { no: "C03", scenario: "Stop sell", step: "Activate stop sell", expected: "Room closed on OTA" }
+                ]
+            },
+            {
+                code: "RESERVATION",
+                title: "RESERVATION",
+                cat: "Reservation",
+                items: [
+                    { no: "D01", scenario: "Booking dari OTA/Website Hotel", step: "Create booking OTA/Website Hotel", expected: "Reservation entered PMS" },
+                    { no: "D02", scenario: "Guest detail info", step: "Compare with guest data", expected: "Complete guest data" }
+                ]
+            },
+            {
+                code: "MODIFICATION",
+                title: "MODIFICATION",
+                cat: "Modification",
+                items: [
+                    { no: "E01", scenario: "Change stay date", step: "Modify stay date", expected: "PMS update" },
+                    { no: "E02", scenario: "Change room type", step: "Modify room", expected: "PMS update" }
+                ]
+            },
+            {
+                code: "CANCELATION",
+                title: "CANCELATION",
+                cat: "Cancellation",
+                items: [
+                    { no: "F01", scenario: "Cancel booking OTA", step: "Cancel reservation", expected: "PMS cancel booking" },
+                    { no: "F02", scenario: "Inventory reopen", step: "After canceling", expected: "Inventory again" }
+                ]
+            },
+            {
+                code: "MULTI",
+                title: "MULTI RESERVATION STATUS",
+                cat: "Multi Resevation Status",
+                items: [
+                    { no: "G01", scenario: "Multiple Reservation ", step: "Booking > 2 Status (Book, Cancel & Modify)", expected: "Reservation entered PMS" }
+                ]
+            },
+            {
+                code: "ERROR",
+                title: "ERROR HANDLING",
+                cat: "Error Handling",
+                items: [
+                    { no: "H01", scenario: "Reservation Not Save", step: "Manual Release", expected: "Knowing the source of the obstacle" },
+                    { no: "H02", scenario: "Availble Not Sync", step: "Check XML Log", expected: "Error log recorded" },
+                    { no: "H03", scenario: "Rate Not Sync", step: "Check XML Log", expected: "Error log recorded" }
+                ]
+            }
+        ];
+
+        const SAMPLE_PROFILE = {
+            docNum: "CM-STA-V2-0526",
+            project: "Grand Qin Hotel Banjar Baru",
+            pms: "PowerPro Hotel System",
+            app: "PowerSTA.exe",
+            brand: "STAAH Channel Manager Interface",
+            version: "1.7.2306.43",
+            date: "19/05/2026",
+            picpp: "Hasbi (Support)",
+            pichot: "Zaky (IT)",
+            prepName: "Hasbi",
+            prepPos: "Tehnical Support",
+            revName: "Zaky",
+            revPos: "IT / EDP",
+            appName: "Adelina",
+            appPos: "Ecommerce / Reservation"
+        };
+
+        // State object
+        let state = {
+            docNum: "",
+            info: {
+                project: "",
+                pms: "",
+                app: "",
+                brand: "",
+                version: "",
+                date: "",
+                picpp: "",
+                pichot: ""
+            },
+            scenarios: {}, // key: scenario_no, val: { status: '-- pilih data --', remark: '' }
+            sign: {
+                prepName: "",
+                prepPos: "",
+                revName: "",
+                revPos: "",
+                appName: "",
+                appPos: ""
+            },
+            templateSections: null,
+            templateDocs: null
+        };
+
+        // Temp variables for Template Editor
+        let tempSections = [];
+        let tempDocs = {};
+        let activeEditItem = null; // { type: 'section'|'scenario', index/secIndex, itemIndex, no }
+
+        // 1. INITIALIZE SHEET TABLE RENDER
+        function initRenderTable() {
+            const body = document.getElementById("sheet-scenarios-body");
+            body.innerHTML = "";
+
+            state.templateSections.forEach(section => {
+                // Section Title Row
+                const secHeaderRow = document.createElement("tr");
+                secHeaderRow.innerHTML = `
+                    <td colspan="6" class="section-header">${section.title}</td>
+                `;
+                body.appendChild(secHeaderRow);
+
+                // Section Items
+                section.items.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.className = "sc-row";
+                    
+                    const savedState = state.scenarios[item.no] || { status: "-- pilih data --", remark: "" };
+                    const selClass = getSelectClass(savedState.status);
+
+                    row.innerHTML = `
+                        <td class="text-center font-bold">
+                            <span class="sc-code-link" onclick="showDocModal('${item.no}')">${item.no}</span>
+                        </td>
+                        <td>${item.scenario}</td>
+                        <td>${item.step}</td>
+                        <td>${item.expected}</td>
+                        <td>
+                            <select id="status-${item.no}" class="cell-select ${selClass}" onchange="onStatusChange('${item.no}', this.value)">
+                                <option value="-- pilih data --" ${savedState.status === '-- pilih data --' ? 'selected' : ''}>-- pilih data --</option>
+                                <option value="DONE" ${savedState.status === 'DONE' ? 'selected' : ''}>DONE</option>
+                                <option value="PENDING" ${savedState.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                            </select>
+                        </td>
+                        <td>
+                            <textarea id="remark-${item.no}" class="remark-textarea" oninput="onRemarkChange('${item.no}', this.value); autoResizeTextarea(this)" placeholder="...">${savedState.remark}</textarea>
+                        </td>
+                    `;
+                    body.appendChild(row);
+                });
+            });
+
+            // Initialize Info values
+            document.getElementById("inp-doc").value = state.docNum;
+            document.getElementById("info-project").value = state.info.project;
+            document.getElementById("info-pms").value = state.info.pms;
+            document.getElementById("info-app").value = state.info.app;
+            document.getElementById("info-brand").value = state.info.brand;
+            document.getElementById("info-version").value = state.info.version;
+            document.getElementById("info-date").value = state.info.date;
+            document.getElementById("info-picpp").value = state.info.picpp;
+            document.getElementById("info-pichot").value = state.info.pichot;
+
+            // Signatures
+            document.getElementById("sign-prep-name").value = state.sign.prepName;
+            document.getElementById("sign-prep-pos").value = state.sign.prepPos;
+            document.getElementById("sign-rev-name").value = state.sign.revName;
+            document.getElementById("sign-rev-pos").value = state.sign.revPos;
+            document.getElementById("sign-app-name").value = state.sign.appName;
+            document.getElementById("sign-app-pos").value = state.sign.appPos;
+
+            // Bind profile inputs to state auto-saving
+            bindProfileInputs();
+
+            // Render summary table
+            updateSummaryAndFormula();
+
+            // Trigger auto-resize on all textareas on load
+            setTimeout(() => {
+                const textareas = document.querySelectorAll('.remark-textarea');
+                textareas.forEach(ta => autoResizeTextarea(ta));
+            }, 50);
+        }
+
+        function getSelectClass(status) {
+            if (status === "DONE") return "opt-done";
+            if (status === "PENDING") return "opt-pending";
+            return "opt-empty";
+        }
+
+        // 2. FORMULAS & COUNTS UPDATE
+        function updateSummaryAndFormula() {
+            const summaryBody = document.getElementById("summary-table-body");
+            if (!summaryBody) return;
+            summaryBody.innerHTML = "";
+
+            // Reset category counts
+            const counts = {};
+            state.templateSections.forEach(sec => {
+                counts[sec.cat] = { done: 0, pending: 0 };
+            });
+
+            // Count from actual state
+            state.templateSections.forEach(sec => {
+                sec.items.forEach(item => {
+                    const scState = state.scenarios[item.no] || { status: "-- pilih data --", remark: "" };
+                    if (scState.status === "DONE") {
+                        counts[sec.cat].done++;
+                    } else if (scState.status === "PENDING") {
+                        counts[sec.cat].pending++;
+                    }
+                });
+            });
+
+            // Render rows in summary
+            state.templateSections.forEach(sec => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="info-label">${sec.cat}</td>
+                    <td class="summary-val text-center">${counts[sec.cat].done}</td>
+                    <td class="summary-val text-center" style="${counts[sec.cat].pending > 0 ? 'color: var(--warning-color);' : ''}">${counts[sec.cat].pending}</td>
+                `;
+                summaryBody.appendChild(row);
+            });
+        }
+
+        // 3. EVENT HANDLERS & BINDINGS
+        function onStatusChange(no, val) {
+            if (!state.scenarios[no]) {
+                state.scenarios[no] = { status: "-- pilih data --", remark: "" };
+            }
+            state.scenarios[no].status = val;
+            
+            // update class
+            const el = document.getElementById(`status-${no}`);
+            if (el) el.className = `cell-select ${getSelectClass(val)}`;
+            
+            saveLocalState();
+            updateSummaryAndFormula();
+        }
+
+        function onRemarkChange(no, val) {
+            if (!state.scenarios[no]) {
+                state.scenarios[no] = { status: "-- pilih data --", remark: "" };
+            }
+            state.scenarios[no].remark = val;
+            saveLocalState();
+        }
+
+        function bindProfileInputs() {
+            // General doc num
+            document.getElementById("inp-doc").addEventListener("input", (e) => {
+                state.docNum = e.target.value;
+                saveLocalState();
+            });
+
+            // Info items
+            const infoKeys = ["project", "pms", "app", "brand", "version", "date", "picpp", "pichot"];
+            infoKeys.forEach(key => {
+                document.getElementById(`info-${key}`).addEventListener("input", (e) => {
+                    state.info[key] = e.target.value;
+                    saveLocalState();
+                });
+            });
+
+            // Sign items
+            const signKeys = ["prep-name", "prep-pos", "rev-name", "rev-pos", "app-name", "app-pos"];
+            signKeys.forEach(key => {
+                const parts = key.split("-");
+                const prop = parts[0] + parts[1].charAt(0).toUpperCase() + parts[1].slice(1); // prepName
+                document.getElementById(`sign-${key}`).addEventListener("input", (e) => {
+                    state.sign[prop] = e.target.value;
+                    saveLocalState();
+                });
+            });
+        }
+
+        // 4. PERSISTENCE
+        function saveLocalState() {
+            localStorage.setItem("excel_uat_state", JSON.stringify(state));
+        }
+
+        function loadLocalState() {
+            // Load custom template config
+            const savedSections = localStorage.getItem("excel_uat_template_sections");
+            const savedDocs = localStorage.getItem("excel_uat_template_docs");
+            if (savedSections && savedDocs) {
+                state.templateSections = JSON.parse(savedSections);
+                state.templateDocs = JSON.parse(savedDocs);
+            } else {
+                state.templateSections = JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
+                state.templateDocs = JSON.parse(JSON.stringify(DEFAULT_DOCS));
+            }
+
+            const saved = localStorage.getItem("excel_uat_state");
+            if (saved) {
+                state = JSON.parse(saved);
+                if (!state.templateSections) state.templateSections = JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
+                if (!state.templateDocs) state.templateDocs = JSON.parse(JSON.stringify(DEFAULT_DOCS));
+            } else {
+                clearState();
+            }
+            initRenderTable();
+        }
+
+        function clearState() {
+            state = {
+                docNum: "CM-STA-V2-0526",
+                info: {
+                    project: "",
+                    pms: "PowerPro Hotel System",
+                    app: "PowerSTA.exe",
+                    brand: "STAAH Channel Manager Interface",
+                    version: "",
+                    date: "",
+                    picpp: "",
+                    pichot: ""
+                },
+                scenarios: {},
+                sign: {
+                    prepName: "",
+                    prepPos: "Tehnical Support",
+                    revName: "",
+                    revPos: "IT / EDP",
+                    appName: "",
+                    appPos: "Ecommerce / Reservation"
+                },
+                templateSections: state.templateSections || JSON.parse(JSON.stringify(DEFAULT_SECTIONS)),
+                templateDocs: state.templateDocs || JSON.parse(JSON.stringify(DEFAULT_DOCS))
+            };
+
+            // Pre-fill scenarios with default '-- pilih data --'
+            state.templateSections.forEach(sec => {
+                sec.items.forEach(item => {
+                    state.scenarios[item.no] = { status: "-- pilih data --", remark: "" };
+                });
+            });
+        }
+
+        // 5. CONTROL BUTTON FUNCTIONS
+        function resetSheet() {
+            if (confirm("Apakah Anda yakin ingin mengosongkan seluruh isian sheet UAT ini? Semua data yang telah Anda isi akan hilang.")) {
+                clearState();
+                saveLocalState();
+                initRenderTable();
+                showNotification("Seluruh sheet berhasil direset!");
+            }
+        }
+
+        function loadSampleData() {
+            state.docNum = SAMPLE_PROFILE.docNum;
+            state.info = {
+                project: SAMPLE_PROFILE.project,
+                pms: SAMPLE_PROFILE.pms,
+                app: SAMPLE_PROFILE.app,
+                brand: SAMPLE_PROFILE.brand,
+                version: SAMPLE_PROFILE.version,
+                date: SAMPLE_PROFILE.date,
+                picpp: SAMPLE_PROFILE.picpp,
+                pichot: SAMPLE_PROFILE.pichot
+            };
+
+            state.sign = {
+                prepName: SAMPLE_PROFILE.prepName,
+                prepPos: SAMPLE_PROFILE.prepPos,
+                revName: SAMPLE_PROFILE.revName,
+                revPos: SAMPLE_PROFILE.revPos,
+                appName: SAMPLE_PROFILE.appName,
+                appPos: SAMPLE_PROFILE.appPos
+            };
+
+            // Set all scenarios to DONE as example
+            state.templateSections.forEach(sec => {
+                sec.items.forEach(item => {
+                    state.scenarios[item.no] = { status: "DONE", remark: "Telah diuji dengan sukses." };
+                });
+            });
+
+            saveLocalState();
+            initRenderTable();
+            showNotification("Contoh data Grand Qin Hotel berhasil dimuat!");
+        }
+
+        function showNotification(msg) {
+            let toast = document.getElementById("action-toast");
+            if (!toast) {
+                toast = document.createElement("div");
+                toast.id = "action-toast";
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 2rem;
+                    right: 2rem;
+                    background-color: var(--text-main);
+                    color: white;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    z-index: 1000;
+                    opacity: 0;
+                    transform: translateY(10px);
+                    transition: all 0.3s ease;
+                    pointer-events: none;
+                `;
+                document.body.appendChild(toast);
+            }
+            toast.textContent = msg;
+            toast.style.opacity = "1";
+            toast.style.transform = "translateY(0)";
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateY(10px)";
+            }, 2500);
+        }
+
+        function autoResizeTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+
+        // 6. POPUP DOCUMENTATION MODAL FUNCTIONS
+        function showDocModal(code) {
+            const data = state.templateDocs[code];
+            if (!data) return;
+
+            document.getElementById("modal-code").textContent = code;
+            document.getElementById("modal-title").textContent = data.title;
+
+            let htmlContent = '';
+            
+            // Description
+            if (data.desc) {
+                htmlContent += `
+                    <div class="doc-section-title">Deskripsi</div>
+                    <div class="doc-text">${data.desc}</div>
+                `;
+            }
+
+            // Note/Langkah-langkah
+            if (data.note) {
+                const formattedNote = data.note.replace(/\n/g, '<br>');
+                htmlContent += `
+                    <div class="doc-section-title">Langkah-Langkah & Catatan</div>
+                    <div class="doc-note">${formattedNote}</div>
+                `;
+            }
+
+            // Images (only render valid ones with sources)
+            const validImages = (data.images || []).filter(img => img.src && img.src.trim() !== "");
+            if (validImages.length > 0) {
+                htmlContent += `<div class="doc-section-title">Dokumentasi Gambar</div>`;
+                validImages.forEach(img => {
+                    htmlContent += `
+                        <div class="doc-image-wrapper" style="margin-bottom: 1.5rem;">
+                            <img src="${img.src}" alt="${img.caption || ''}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+                            ${img.caption ? `<div class="doc-image-caption" style="text-align: center; margin-top: 0.5rem; font-style: italic; font-size: 0.8rem; color: #64748b;">${img.caption}</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById("modal-body").innerHTML = htmlContent;
+            document.getElementById("doc-modal").classList.add("active");
+            document.body.style.overflow = "hidden"; // disable background scroll
+        }
+
+        function closeDocModal(event) {
+            document.getElementById("doc-modal").classList.remove("active");
+            document.body.style.overflow = ""; // enable background scroll
+        }
+
+        // Close modal on ESC key
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                closeDocModal();
+            }
+        });
+
+        // 7. TEMPLATE EDITOR FUNCTIONS
+        function openTemplateEditor() {
+            tempSections = JSON.parse(JSON.stringify(state.templateSections));
+            tempDocs = JSON.parse(JSON.stringify(state.templateDocs));
+            activeEditItem = null;
+            
+            renderEditorSidebar();
+            renderEditorForm();
+            
+            document.getElementById("editor-modal").classList.add("active");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeEditorModal() {
+            document.getElementById("editor-modal").classList.remove("active");
+            document.body.style.overflow = "";
+        }
+
+        function renderEditorSidebar() {
+            const listContainer = document.getElementById("editor-sections-list");
+            if (!listContainer) return;
+            listContainer.innerHTML = "";
+
+            tempSections.forEach((sec, secIdx) => {
+                const secItem = document.createElement("div");
+                secItem.className = "editor-sec-item";
+                
+                const isSecActive = activeEditItem && activeEditItem.type === 'section' && activeEditItem.index === secIdx;
+                const header = document.createElement("div");
+                header.className = "editor-sec-header";
+                if (isSecActive) header.style.backgroundColor = "#e2e8f0";
+                
+                header.innerHTML = `
+                    <span onclick="selectSectionToEdit(${secIdx})" style="flex: 1; text-align: left;">${sec.title}</span>
+                    <div class="editor-sec-actions">
+                        <button class="editor-btn-small" onclick="addNewScenarioToSection(${secIdx}, event)">+ UAT</button>
+                        <button class="editor-btn-small" onclick="deleteSection(${secIdx}, event)" style="color: #ef4444; border-color: #fca5a5;">Hapus</button>
+                    </div>
+                `;
+                secItem.appendChild(header);
+
+                const scWrapper = document.createElement("div");
+                scWrapper.className = "editor-sec-scenarios";
+                
+                sec.items.forEach((item, itemIdx) => {
+                    const scItem = document.createElement("div");
+                    const isScActive = activeEditItem && activeEditItem.type === 'scenario' && activeEditItem.no === item.no;
+                    scItem.className = `editor-sc-item ${isScActive ? 'active' : ''}`;
+                    scItem.onclick = () => selectScenarioToEdit(secIdx, itemIdx);
+                    
+                    scItem.innerHTML = `
+                        <span style="flex: 1; text-align: left;"><strong>${item.no}</strong>: ${item.scenario}</span>
+                        <button class="editor-btn-small" onclick="deleteScenario(${secIdx}, ${itemIdx}, event)" style="color: #ef4444; border: none; background: transparent; font-size: 1rem; padding: 0 4px;">&times;</button>
+                    `;
+                    scWrapper.appendChild(scItem);
+                });
+                
+                secItem.appendChild(scWrapper);
+                listContainer.appendChild(secItem);
+            });
+        }
+
+        function selectSectionToEdit(secIdx) {
+            activeEditItem = { type: 'section', index: secIdx };
+            renderEditorSidebar();
+            renderEditorForm();
+        }
+
+        function selectScenarioToEdit(secIdx, itemIdx) {
+            const item = tempSections[secIdx].items[itemIdx];
+            activeEditItem = { type: 'scenario', secIndex: secIdx, itemIndex: itemIdx, no: item.no };
+            renderEditorSidebar();
+            renderEditorForm();
+        }
+
+        function renderEditorForm() {
+            const pane = document.getElementById("editor-form-pane");
+            if (!pane) return;
+            pane.innerHTML = "";
+
+            if (!activeEditItem) {
+                pane.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); margin-top: 4rem;">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem; color: #cbd5e1;"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"></path></svg>
+                        <p style="font-weight: 500;">Pilih kategori atau skenario di sebelah kiri untuk mulai mengedit</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (activeEditItem.type === 'section') {
+                const sec = tempSections[activeEditItem.index];
+                pane.innerHTML = `
+                    <h4 style="margin-bottom: 1rem; font-family: var(--font-title); font-size: 1.1rem; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; text-align: left;">Edit Kategori</h4>
+                    <div class="editor-form-group" style="text-align: left;">
+                        <label>Kode Kategori (Unique, e.g. INSTALLATION)</label>
+                        <input type="text" class="editor-input" value="${sec.code || ''}" onchange="updateTempSectionField('code', this.value)">
+                    </div>
+                    <div class="editor-form-group" style="text-align: left;">
+                        <label>Judul Kategori (Tampilan Utama, e.g. INSTALLATION)</label>
+                        <input type="text" class="editor-input" value="${sec.title || ''}" onchange="updateTempSectionField('title', this.value)">
+                    </div>
+                    <div class="editor-form-group" style="text-align: left;">
+                        <label>Nama Ringkas / Label Summary (e.g. Installation)</label>
+                        <input type="text" class="editor-input" value="${sec.cat || ''}" onchange="updateTempSectionField('cat', this.value)">
+                    </div>
+                `;
+            } else if (activeEditItem.type === 'scenario') {
+                const sec = tempSections[activeEditItem.secIndex];
+                const item = sec.items[activeEditItem.itemIndex];
+                const doc = tempDocs[item.no] || { title: "", desc: "", note: "", images: [] };
+
+                let imagesHtml = '';
+                if (doc.images && doc.images.length > 0) {
+                    doc.images.forEach((img, imgIdx) => {
+                        imagesHtml += `
+                            <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; background: #f8fafc; position: relative; text-align: left;">
+                                <div style="display: flex; gap: 0.75rem;">
+                                    ${img.src ? 
+                                        `<img src="${img.src}" style="width: 80px; height: 80px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; background: white;">` : 
+                                        `<div style="width: 80px; height: 80px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; border-radius: 4px; border: 1px solid #cbd5e1; text-align: center; color: #64748b;">No Image</div>`
+                                    }
+                                    <div style="flex: 1; display: flex; flex-direction: column; gap: 0.35rem;">
+                                        ${img.src && img.src.startsWith('data:') ? 
+                                            `<span style="font-size: 0.75rem; color: var(--success-color); font-weight: 600; padding: 0.25rem 0; display: inline-block;">✓ Gambar Berhasil Diunggah (Base64)</span>` :
+                                            `<input type="text" class="editor-input" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" placeholder="Path gambar (e.g. docs_images/1.png)" value="${img.src || ''}" oninput="updateTempImageField(${imgIdx}, 'src', this.value)">`
+                                        }
+                                        <input type="text" class="editor-input" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" placeholder="Keterangan gambar (e.g. Gambar A01.1 SSL Test)" value="${img.caption || ''}" oninput="updateTempImageField(${imgIdx}, 'caption', this.value)">
+                                    </div>
+                                </div>
+                                <button class="editor-btn-small" style="position: absolute; top: 0.5rem; right: 0.5rem; color: #ef4444; border-color: #fca5a5;" onclick="deleteTempImage(${imgIdx})">Hapus</button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    imagesHtml = `<p style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; text-align: left; margin: 0.5rem 0;">Belum ada gambar ditambahkan</p>`;
+                }
+
+                pane.innerHTML = `
+                    <h4 style="margin-bottom: 1rem; font-family: var(--font-title); font-size: 1.1rem; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Edit UAT Skenario & Dokumentasi</span>
+                        <span style="font-size: 0.8rem; background: var(--primary-accent-light); color: var(--primary-accent); padding: 2px 8px; border-radius: 4px;">Kode: ${item.no}</span>
+                    </h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; text-align: left;">
+                        <div class="editor-form-group">
+                            <label>Kode Skenario (Unique, e.g. A01)</label>
+                            <input type="text" class="editor-input" value="${item.no || ''}" onchange="updateTempScenarioNo('${item.no}', this.value)">
+                        </div>
+                        <div class="editor-form-group">
+                            <label>Nama Skenario (e.g. API connectivity PMS ke CM)</label>
+                            <input type="text" class="editor-input" value="${item.scenario || ''}" oninput="updateTempScenarioField('scenario', this.value)">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; text-align: left;">
+                        <div class="editor-form-group">
+                            <label>Test Step (e.g. API connection test)</label>
+                            <input type="text" class="editor-input" value="${item.step || ''}" oninput="updateTempScenarioField('step', this.value)">
+                        </div>
+                        <div class="editor-form-group">
+                            <label>Expected Result (e.g. Connected)</label>
+                            <input type="text" class="editor-input" value="${item.expected || ''}" oninput="updateTempScenarioField('expected', this.value)">
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px dashed #e2e8f0; padding-top: 1rem; margin-top: 1rem; text-align: left;">
+                        <h5 style="margin-bottom: 0.75rem; font-family: var(--font-title); font-size: 0.95rem; color: #1e293b;">Konten Dokumentasi Popup</h5>
+                        
+                        <div class="editor-form-group">
+                            <label>Judul Dokumentasi</label>
+                            <input type="text" id="edit-doc-title" class="editor-input" value="${doc.title || ''}" oninput="updateTempDocField('title', this.value)">
+                        </div>
+                        
+                        <div class="editor-form-group">
+                            <label>Deskripsi Dokumentasi</label>
+                            <textarea class="editor-textarea" oninput="updateTempDocField('desc', this.value)">${doc.desc || ''}</textarea>
+                        </div>
+                        
+                        <div class="editor-form-group">
+                            <label>Langkah-Langkah & Catatan (Gunakan baris baru untuk enter)</label>
+                            <textarea class="editor-textarea" style="min-height: 120px;" oninput="updateTempDocField('note', this.value)">${doc.note || ''}</textarea>
+                        </div>
+
+                        <div class="editor-form-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <label style="margin-bottom: 0;">Dokumentasi Gambar</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="editor-btn-small" onclick="addNewTempImage()">+ Tambah Path</button>
+                                    <button class="editor-btn-small" onclick="document.getElementById('upload-img-file').click()">+ Upload File</button>
+                                    <input type="file" id="upload-img-file" style="display: none;" accept="image/*" onchange="uploadTempImageFile(event)">
+                                </div>
+                            </div>
+                            <div id="editor-images-list">
+                                ${imagesHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateTempSectionField(field, val) {
+            const sec = tempSections[activeEditItem.index];
+            sec[field] = val;
+            if (field === 'title' || field === 'code' || field === 'cat') {
+                renderEditorSidebar();
+            }
+        }
+
+        function updateTempScenarioField(field, val) {
+            const item = tempSections[activeEditItem.secIndex].items[activeEditItem.itemIndex];
+            item[field] = val;
+            
+            if (field === 'scenario') {
+                const no = activeEditItem.no;
+                if (!tempDocs[no]) {
+                    tempDocs[no] = { title: "", desc: "", note: "", images: [] };
+                }
+                const doc = tempDocs[no];
+                if (!doc.title || doc.title === val || doc.title === "Skenario Baru") {
+                    doc.title = val;
+                    const docTitleInput = document.getElementById("edit-doc-title");
+                    if (docTitleInput) docTitleInput.value = val;
+                }
+                renderEditorSidebar();
+            }
+        }
+
+        function updateTempScenarioNo(oldNo, newNo) {
+            newNo = newNo.trim().toUpperCase();
+            if (!newNo || oldNo === newNo) return;
+            
+            let exists = false;
+            tempSections.forEach(sec => {
+                sec.items.forEach(item => {
+                    if (item.no === newNo) exists = true;
+                });
+            });
+            if (exists) {
+                alert("Kode skenario '" + newNo + "' sudah terpakai!");
+                return;
+            }
+
+            const item = tempSections[activeEditItem.secIndex].items[activeEditItem.itemIndex];
+            item.no = newNo;
+
+            if (tempDocs[oldNo]) {
+                tempDocs[newNo] = tempDocs[oldNo];
+                delete tempDocs[oldNo];
+            } else {
+                tempDocs[newNo] = { title: item.scenario, desc: "", note: "", images: [] };
+            }
+            
+            if (state.scenarios[oldNo]) {
+                state.scenarios[newNo] = state.scenarios[oldNo];
+                delete state.scenarios[oldNo];
+            }
+
+            activeEditItem.no = newNo;
+            renderEditorSidebar();
+            
+            const badge = document.querySelector("#editor-form-pane h4 span:nth-child(2)");
+            if (badge) badge.textContent = "Kode: " + newNo;
+        }
+
+        function updateTempDocField(field, val) {
+            const no = activeEditItem.no;
+            if (!tempDocs[no]) {
+                tempDocs[no] = { title: "", desc: "", note: "", images: [] };
+            }
+            tempDocs[no][field] = val;
+        }
+
+        function updateTempImageField(imgIdx, field, val) {
+            const no = activeEditItem.no;
+            if (tempDocs[no] && tempDocs[no].images && tempDocs[no].images[imgIdx]) {
+                tempDocs[no].images[imgIdx][field] = val;
+                if (field === 'src') {
+                    // Update preview image directly if it exists in DOM
+                    const wrapper = document.querySelectorAll("#editor-images-list > div")[imgIdx];
+                    if (wrapper) {
+                        const imgEl = wrapper.querySelector("img");
+                        if (imgEl) {
+                            imgEl.src = val;
+                        } else if (val) {
+                            // If it had no preview before, replace placeholder with img
+                            const placeholder = wrapper.querySelector("div");
+                            if (placeholder) {
+                                const newImg = document.createElement("img");
+                                newImg.src = val;
+                                newImg.style.cssText = "width: 80px; height: 80px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; background: white;";
+                                placeholder.replaceWith(newImg);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function deleteTempImage(imgIdx) {
+            const no = activeEditItem.no;
+            if (tempDocs[no] && tempDocs[no].images) {
+                tempDocs[no].images.splice(imgIdx, 1);
+                renderEditorForm();
+            }
+        }
+
+        function addNewTempImage() {
+            const no = activeEditItem.no;
+            if (!tempDocs[no]) {
+                tempDocs[no] = { title: "", desc: "", note: "", images: [] };
+            }
+            if (!tempDocs[no].images) {
+                tempDocs[no].images = [];
+            }
+            tempDocs[no].images.push({ src: "", caption: "" });
+            renderEditorForm();
+        }
+
+        function uploadTempImageFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+                const no = activeEditItem.no;
+                if (!tempDocs[no]) {
+                    tempDocs[no] = { title: "", desc: "", note: "", images: [] };
+                }
+                if (!tempDocs[no].images) {
+                    tempDocs[no].images = [];
+                }
+                tempDocs[no].images.push({ src: base64Data, caption: file.name });
+                renderEditorForm();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function addNewSection() {
+            const newCode = "NEW_SEC_" + (tempSections.length + 1);
+            const newSec = {
+                code: newCode,
+                title: "KATEGORI BARU",
+                cat: "Baru",
+                items: []
+            };
+            tempSections.push(newSec);
+            activeEditItem = { type: 'section', index: tempSections.length - 1 };
+            renderEditorSidebar();
+            renderEditorForm();
+        }
+
+        function addNewScenarioToSection(secIdx, event) {
+            if (event) event.stopPropagation();
+            
+            const sec = tempSections[secIdx];
+            let prefix = "X";
+            
+            if (sec.items.length > 0) {
+                const match = sec.items[0].no.match(/^([A-Za-z]+)/);
+                if (match) prefix = match[1];
+            } else {
+                const charCode = 65 + secIdx;
+                if (charCode >= 65 && charCode <= 90) {
+                    prefix = String.fromCharCode(charCode);
+                }
+            }
+
+            let maxNum = 0;
+            tempSections.forEach(s => {
+                s.items.forEach(item => {
+                    const match = item.no.match(/^([A-Za-z]+)(\d+)$/);
+                    if (match && match[1] === prefix) {
+                        const num = parseInt(match[2], 10);
+                        if (num > maxNum) maxNum = num;
+                    }
+                });
+            });
+            
+            const nextNum = maxNum + 1;
+            const newNo = prefix + (nextNum < 10 ? "0" + nextNum : nextNum);
+
+            const newItem = {
+                no: newNo,
+                scenario: "Skenario Baru",
+                step: "Langkah pengujian",
+                expected: "Hasil yang diharapkan"
+            };
+            
+            sec.items.push(newItem);
+            
+            tempDocs[newNo] = {
+                title: "Skenario Baru",
+                desc: "Deskripsi skenario baru.",
+                note: "",
+                images: []
+            };
+
+            activeEditItem = { type: 'scenario', secIndex: secIdx, itemIndex: sec.items.length - 1, no: newNo };
+            renderEditorSidebar();
+            renderEditorForm();
+        }
+
+        function deleteSection(secIdx, event) {
+            if (event) event.stopPropagation();
+            const sec = tempSections[secIdx];
+            if (confirm(`Apakah Anda yakin ingin menghapus kategori "${sec.title}" beserta seluruh skenario didalamnya?`)) {
+                sec.items.forEach(item => {
+                    delete tempDocs[item.no];
+                    delete state.scenarios[item.no];
+                });
+                
+                tempSections.splice(secIdx, 1);
+                activeEditItem = null;
+                renderEditorSidebar();
+                renderEditorForm();
+            }
+        }
+
+        function deleteScenario(secIdx, itemIdx, event) {
+            if (event) event.stopPropagation();
+            const sec = tempSections[secIdx];
+            const item = sec.items[itemIdx];
+            if (confirm(`Apakah Anda yakin ingin menghapus skenario "${item.no}: ${item.scenario}"?`)) {
+                delete tempDocs[item.no];
+                delete state.scenarios[item.no];
+                sec.items.splice(itemIdx, 1);
+                
+                activeEditItem = null;
+                renderEditorSidebar();
+                renderEditorForm();
+            }
+        }
+
+        function exportTemplate() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                sections: tempSections,
+                docs: tempDocs
+            }, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "uat_template_config.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importTemplate(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.sections && parsed.docs) {
+                        tempSections = parsed.sections;
+                        tempDocs = parsed.docs;
+                        activeEditItem = null;
+                        renderEditorSidebar();
+                        renderEditorForm();
+                        alert("Template berhasil di-import!");
+                    } else {
+                        alert("Format file JSON template tidak valid!");
+                    }
+                } catch (err) {
+                    alert("Gagal membaca file JSON: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetTemplateToDefault() {
+            if (confirm("Apakah Anda yakin ingin mengembalikan template (kategori & skenario UAT) ke setelan bawaan? Semua modifikasi template Anda akan hilang.")) {
+                tempSections = JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
+                tempDocs = JSON.parse(JSON.stringify(DEFAULT_DOCS));
+                activeEditItem = null;
+                renderEditorSidebar();
+                renderEditorForm();
+                alert("Template telah di-reset ke setelan bawaan!");
+            }
+        }
+
+        function saveTemplateChanges() {
+            state.templateSections = tempSections;
+            state.templateDocs = tempDocs;
+            
+            localStorage.setItem("excel_uat_template_sections", JSON.stringify(tempSections));
+            localStorage.setItem("excel_uat_template_docs", JSON.stringify(tempDocs));
+            
+            const validCodes = new Set();
+            tempSections.forEach(sec => sec.items.forEach(item => validCodes.add(item.no)));
+            for (let code in state.scenarios) {
+                if (!validCodes.has(code)) {
+                    delete state.scenarios[code];
+                }
+            }
+            saveLocalState();
+
+            initRenderTable();
+            closeEditorModal();
+            showNotification("Template UAT berhasil diperbarui!");
+        }
+
+        function closeEditorModal(event) {
+            // Close if clicking overlay directly
+            if (event && event.target !== document.getElementById("editor-modal")) return;
+            document.getElementById("editor-modal").classList.remove("active");
+            document.body.style.overflow = "";
+        }
+
+        // Run on load
+        window.addEventListener("DOMContentLoaded", loadLocalState);
+    </script>
+</body>
+</html>
