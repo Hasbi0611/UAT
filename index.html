@@ -907,23 +907,17 @@
                 order: -1 !important;
             }
 
-            /* Sheet container responsiveness */
+            /* Sheet container responsiveness - fits phone screen */
             .sheet-container {
-                padding: 1.5rem 0.75rem !important;
+                padding: 1rem 0.5rem !important;
                 border-radius: 6px !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
                 width: 100% !important;
                 max-width: 100% !important;
                 box-sizing: border-box !important;
+                overflow-x: visible !important; /* No horizontal scroll for the container */
             }
 
-            /* Keep spreadsheet table widths consistent so they scroll like a real Excel sheet */
-            .sheet-table {
-                min-width: 850px !important;
-            }
-
-            /* Adjust title table cell layout on mobile to prevent logo overlap */
+            /* Stack Title and Logo */
             .sheet-table:first-of-type td.main-title > div {
                 flex-direction: column !important;
                 align-items: center !important;
@@ -943,6 +937,203 @@
             }
             
             .doc-ref {
+                text-align: center !important;
+            }
+
+            /* Make tables block-based cards so they wrap inside the phone screen width */
+            .sheet-table {
+                display: block !important;
+                width: 100% !important;
+                border: none !important;
+                min-width: 0 !important; /* Remove min-width to prevent horizontal scrolling! */
+                table-layout: auto !important;
+            }
+
+            .sheet-table colgroup {
+                display: none !important;
+            }
+
+            .sheet-table thead {
+                display: none !important;
+            }
+
+            .sheet-table tbody, .sheet-table tr, .sheet-table td {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Section Header row (e.g. INSTALLATION, MAPPING) */
+            .sheet-table tr:has(.section-header) {
+                background: #f1f5f9 !important;
+                border-radius: 6px !important;
+                margin-top: 1rem !important;
+                margin-bottom: 0.75rem !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+            .section-header {
+                font-size: 0.95rem !important;
+                font-weight: 800 !important;
+                color: #1e293b !important;
+                padding: 0.5rem 0.75rem !important;
+                text-align: left !important;
+                border: none !important;
+            }
+
+            /* Info Table Mobile Styling */
+            /* The info table is the second table in the sheet-container */
+            .sheet-container > table:nth-of-type(2) {
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 8px !important;
+                overflow: hidden !important;
+                background: #f8fafc !important;
+            }
+            .sheet-container > table:nth-of-type(2) tr {
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+            .sheet-container > table:nth-of-type(2) tr:last-child {
+                border-bottom: none !important;
+            }
+            /* Hide the "Item" / "Description" table header row in info table */
+            .sheet-container > table:nth-of-type(2) tr.table-column-header {
+                display: none !important;
+            }
+            .sheet-container > table:nth-of-type(2) td {
+                border: none !important;
+                padding: 0.4rem 0.75rem !important;
+            }
+            .sheet-container > table:nth-of-type(2) td.info-label {
+                font-weight: 700 !important;
+                color: #475569 !important;
+                padding-bottom: 0.1rem !important;
+                font-size: 0.75rem !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.05em !important;
+                background: transparent !important;
+            }
+            .sheet-container > table:nth-of-type(2) td:not(.info-label) {
+                padding-top: 0.1rem !important;
+            }
+
+            /* Scenario Table: Convert rows into cards */
+            #sheet-scenarios-body tr.sc-row {
+                background: white !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 8px !important;
+                padding: 0.75rem !important;
+                margin-bottom: 1rem !important;
+                box-shadow: 0 2px 4px rgba(15, 23, 42, 0.03) !important;
+            }
+            #sheet-scenarios-body tr.sc-row td {
+                border: none !important;
+                padding: 0.25rem 0 !important;
+                text-align: left !important;
+            }
+
+            /* Display Scenario code link as a nice badge */
+            #sheet-scenarios-body tr.sc-row td:nth-child(1) {
+                border-bottom: 1px solid #f1f5f9 !important;
+                padding-bottom: 0.5rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            #sheet-scenarios-body tr.sc-row td:nth-child(1) .sc-code-link {
+                background-color: var(--primary-accent-light) !important;
+                color: var(--primary-accent) !important;
+                padding: 0.25rem 0.75rem !important;
+                border-radius: 4px !important;
+                font-size: 0.8rem !important;
+                display: inline-block !important;
+            }
+
+            /* Add labels to table fields */
+            #sheet-scenarios-body tr.sc-row td:nth-child(2):before { content: "Scenario: "; font-weight: 700; color: #64748b; font-size: 0.8rem; }
+            #sheet-scenarios-body tr.sc-row td:nth-child(3):before { content: "Step: "; font-weight: 700; color: #64748b; font-size: 0.8rem; }
+            #sheet-scenarios-body tr.sc-row td:nth-child(4):before { content: "Expected: "; font-weight: 700; color: #64748b; font-size: 0.8rem; }
+            #sheet-scenarios-body tr.sc-row td:nth-child(5):before { content: "Status: "; font-weight: 700; color: #64748b; font-size: 0.8rem; display: block; margin-bottom: 0.25rem; }
+            #sheet-scenarios-body tr.sc-row td:nth-child(6):before { content: "Remark: "; font-weight: 700; color: #64748b; font-size: 0.8rem; display: block; margin-bottom: 0.25rem; }
+
+            /* Make input controls look premium and fit 100% width */
+            #sheet-scenarios-body tr.sc-row td select.cell-select {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                border: 1px solid #cbd5e1 !important;
+                background-color: #f8fafc !important;
+                padding: 0.35rem 0.5rem !important;
+                font-size: 0.8rem !important;
+            }
+            #sheet-scenarios-body tr.sc-row td textarea.remark-textarea {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                border: 1px solid #cbd5e1 !important;
+                background-color: #f8fafc !important;
+                padding: 0.35rem 0.5rem !important;
+                border-radius: 4px !important;
+                min-height: 45px !important;
+                font-size: 0.8rem !important;
+            }
+
+            /* Summary Table Mobile Layout (3 Columns) */
+            /* Keep as table layout since 3 narrow columns easily fit mobile screen width */
+            .sheet-table:nth-of-type(4) {
+                display: table !important;
+                width: 100% !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 8px !important;
+                background: white !important;
+                margin-top: 1.5rem !important;
+                table-layout: fixed !important;
+            }
+            .sheet-table:nth-of-type(4) colgroup {
+                display: table-column-group !important;
+            }
+            .sheet-table:nth-of-type(4) thead {
+                display: table-header-group !important;
+            }
+            .sheet-table:nth-of-type(4) tbody {
+                display: table-row-group !important;
+            }
+            .sheet-table:nth-of-type(4) tr {
+                display: table-row !important;
+            }
+            .sheet-table:nth-of-type(4) td {
+                display: table-cell !important;
+                width: auto !important;
+            }
+
+            /* Sign-off Table Mobile Layout (3 Columns) */
+            /* Keep as table layout since 3 columns of input fit mobile screen width perfectly */
+            .sign-off-table {
+                display: table !important;
+                width: 100% !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 8px !important;
+                background: #f8fafc !important;
+                margin-top: 1.5rem !important;
+                table-layout: fixed !important;
+            }
+            .sign-off-table colgroup {
+                display: table-column-group !important;
+            }
+            .sign-off-table thead {
+                display: table-header-group !important;
+            }
+            .sign-off-table tbody {
+                display: table-row-group !important;
+            }
+            .sign-off-table tr {
+                display: table-row !important;
+            }
+            .sign-off-table td {
+                display: table-cell !important;
+                width: 33.3% !important;
+                padding: 0.4rem 0.25rem !important;
+            }
+            .sign-off-table input {
+                font-size: 0.75rem !important;
+                padding: 0.25rem !important;
+                border: 1px solid #cbd5e1 !important;
+                background-color: white !important;
+                border-radius: 4px !important;
                 text-align: center !important;
             }
 
@@ -1828,6 +2019,52 @@
             el.style.height = el.scrollHeight + 'px';
         }
 
+        // Fallback for images if they fail to load on GitHub Pages
+        function handleImageError(img) {
+            if (img.dataset.tryCount === undefined) {
+                img.dataset.tryCount = "0";
+            }
+            const tryCount = parseInt(img.dataset.tryCount);
+            
+            // Get original source from the image attributes
+            let originalSrc = img.getAttribute("src");
+            if (!originalSrc) return;
+            
+            // Define list of fallbacks
+            // If the user uploaded files directly into the root folder instead of preserving folder structure,
+            // they will reside in the root, so "docs_images/2.png" becomes "2.png".
+            // Also handle case-sensitivity variations like Docs_images, Docs_Images, docs_images.
+            const fallbacks = [
+                // 1. Fallback to root (in case they uploaded files directly to GitHub without folder)
+                originalSrc.replace("docs_images/", ""),
+                // 2. Try Docs_images capitalization
+                originalSrc.replace("docs_images/", "Docs_images/"),
+                // 3. Try Docs_Images capitalization
+                originalSrc.replace("docs_images/", "Docs_Images/"),
+                // 4. Try DOCS_IMAGES capitalization
+                originalSrc.replace("docs_images/", "DOCS_IMAGES/"),
+                // 5. Try uppercase extension
+                originalSrc.replace(".png", ".PNG").replace(".jpeg", ".JPEG"),
+                originalSrc.replace("docs_images/", "").replace(".png", ".PNG").replace(".jpeg", ".JPEG")
+            ];
+            
+            if (tryCount < fallbacks.length) {
+                img.dataset.tryCount = (tryCount + 1).toString();
+                img.src = fallbacks[tryCount];
+            } else {
+                // All fallbacks failed - show a helpful message in the alt text
+                img.style.border = "1px dashed #ef4444";
+                img.style.padding = "0.5rem";
+                img.style.background = "#fee2e2";
+                img.style.color = "#991b1b";
+                img.style.borderRadius = "6px";
+                img.style.display = "block";
+                img.style.fontSize = "0.75rem";
+                img.style.textAlign = "center";
+                img.alt = "Gambar tidak ditemukan. Harap pastikan folder 'docs_images' telah diunggah ke GitHub dengan benar.";
+            }
+        }
+
         // 6. POPUP DOCUMENTATION MODAL FUNCTIONS
         function showDocModal(code) {
             const data = state.templateDocs[code];
@@ -1862,7 +2099,7 @@
                 validImages.forEach(img => {
                     htmlContent += `
                         <div class="doc-image-wrapper" style="margin-bottom: 1.5rem;">
-                            <img src="${img.src}" alt="${img.caption || ''}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+                            <img src="${img.src}" onerror="handleImageError(this)" alt="${img.caption || ''}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
                             ${img.caption ? `<div class="doc-image-caption" style="text-align: center; margin-top: 0.5rem; font-style: italic; font-size: 0.8rem; color: #64748b;">${img.caption}</div>` : ''}
                         </div>
                     `;
@@ -2005,7 +2242,7 @@
                             <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; background: #f8fafc; position: relative; text-align: left;">
                                 <div style="display: flex; gap: 0.75rem;">
                                     ${img.src ? 
-                                        `<img src="${img.src}" style="width: 80px; height: 80px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; background: white;">` : 
+                                        `<img src="${img.src}" onerror="handleImageError(this)" style="width: 80px; height: 80px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; background: white;">` : 
                                         `<div style="width: 80px; height: 80px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; border-radius: 4px; border: 1px solid #cbd5e1; text-align: center; color: #64748b;">No Image</div>`
                                     }
                                     <div style="flex: 1; display: flex; flex-direction: column; gap: 0.35rem;">
