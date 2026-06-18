@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -858,6 +858,114 @@
             .sheet-table col.col-exp { width: 20% !important; }
             .sheet-table col.col-status { width: 10% !important; }
             .sheet-table col.col-remark { width: 25% !important; }
+        }
+
+        /* MOBILE & TABLET STYLING */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            /* Action bar responsive styling */
+            .action-bar {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 0.75rem !important;
+                padding: 0.75rem !important;
+                top: 0.5rem !important;
+                border-radius: 8px !important;
+            }
+            
+            /* Hide the secondary description text to save space */
+            .action-bar .bar-title div {
+                display: none !important;
+            }
+            
+            .action-bar .bar-title {
+                justify-content: center !important;
+            }
+
+            .bar-buttons {
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 0.35rem !important;
+                width: 100% !important;
+            }
+
+            .bar-buttons .btn {
+                padding: 0.4rem 0.6rem !important;
+                font-size: 0.75rem !important;
+                flex: 1 1 auto !important;
+                justify-content: center !important;
+            }
+
+            .status-indicator {
+                width: 100% !important;
+                justify-content: center !important;
+                font-size: 0.7rem !important;
+                padding: 0.25rem 0.5rem !important;
+                order: -1 !important;
+            }
+
+            /* Sheet container responsiveness */
+            .sheet-container {
+                padding: 1.5rem 0.75rem !important;
+                border-radius: 6px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Keep spreadsheet table widths consistent so they scroll like a real Excel sheet */
+            .sheet-table {
+                min-width: 850px !important;
+            }
+
+            /* Adjust title table cell layout on mobile to prevent logo overlap */
+            .sheet-table:first-of-type td.main-title > div {
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+            }
+
+            .sheet-table:first-of-type .sheet-logo {
+                position: static !important;
+                height: 45px !important;
+                margin-bottom: 0.25rem !important;
+            }
+
+            .main-title span {
+                font-size: 1.25rem !important;
+                text-align: center !important;
+                display: block !important;
+            }
+            
+            .doc-ref {
+                text-align: center !important;
+            }
+
+            /* Overlay adjustments */
+            .doc-modal-overlay, .editor-modal-overlay {
+                padding: 1rem !important;
+            }
+
+            /* Template manager responsive layout */
+            .editor-modal-container {
+                flex-direction: column !important;
+                overflow-y: auto !important;
+            }
+            .editor-sidebar {
+                width: 100% !important;
+                border-right: none !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                flex: none !important;
+            }
+            .editor-content {
+                width: 100% !important;
+                flex: none !important;
+            }
         }
     </style>
 </head>
